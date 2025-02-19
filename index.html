@@ -60,7 +60,7 @@
         let prevSmoothed = null;
         const alpha = 0.3;              // 平滑係數：介於 0～1，數值越低越平滑
         // 提高門檻值以降低靈敏度，避免噪音干擾（依需求調整）
-        const threshold = 1.5;          // m/s²
+        const threshold = 5;          // m/s²
         const minStepInterval = 300;    // 兩步之間的最小間隔（毫秒）
 
         function handleMotion(event) {
