@@ -2,12 +2,16 @@
 <html>
 
 <head>
-    <meta charset="utf-8" />
-    <title>計步器範例</title>
+    <meta charset="utf-8">
+    <title>最強教學版計步器</title>
     <style>
         body {
             font-family: sans-serif;
             padding: 1rem;
+        }
+
+        h1 {
+            margin-bottom: 1rem;
         }
 
         .counter {
@@ -22,14 +26,20 @@
 </head>
 
 <body>
-    <h1>計步器 (需裝置動態權限)</h1>
+    <h1>最強(教學版)計步器</h1>
+    <!-- 按鈕區：一個用來請求 motion 權限、另一個重置步數 -->
     <div>
-        <button id="requestMotionBtn">允許動態權限</button>
+        <button id="requestBtn">允許動態權限</button>
         <button id="resetBtn">重置步數</button>
     </div>
 
-    <div class="counter">步數：<span id="stepCount">0</span></div>
-    <p>若無法取得加速度數據，請在 iOS/Android 手機上允許 motion & orientation 權限。</p>
+    <!-- 顯示步數 -->
+    <div class="counter">
+        步數：<span id="stepCount">0</span>
+    </div>
+
+    <p>建議：在 iOS Safari / Android Chrome，以 HTTPS 或 localhost 方式開啟此頁面。
+        點擊「允許動態權限」，允許後再拿著手機走動或晃動。</p>
 
     <script src="pedometer.js"></script>
 </body>
