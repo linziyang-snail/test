@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="utf-8" />
-    <title>簡易計步器</title>
+    <title>計步器範例</title>
     <style>
         body {
             font-family: sans-serif;
@@ -14,15 +14,22 @@
             font-size: 2rem;
             margin-bottom: 1rem;
         }
+
+        button {
+            margin-right: 1rem;
+        }
     </style>
 </head>
 
 <body>
-    <h1>簡易計步器示範</h1>
-    <div class="counter">步數：<span id="stepCount">0</span></div>
-    <button id="resetBtn">重置步數</button>
+    <h1>計步器 (需裝置動態權限)</h1>
+    <div>
+        <button id="requestMotionBtn">允許動態權限</button>
+        <button id="resetBtn">重置步數</button>
+    </div>
 
-    <p>建議在手機上打開此網頁，並允許感測器 / motion 權限，實際走路或搖動裝置觀察步數變化。</p>
+    <div class="counter">步數：<span id="stepCount">0</span></div>
+    <p>若無法取得加速度數據，請在 iOS/Android 手機上允許 motion & orientation 權限。</p>
 
     <script src="pedometer.js"></script>
 </body>
