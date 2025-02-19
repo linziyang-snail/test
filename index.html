@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8" />
+    <title>簡易計步器</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            padding: 1rem;
+        }
+
+        .counter {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>簡易計步器示範</h1>
+    <div class="counter">步數：<span id="stepCount">0</span></div>
+    <button id="resetBtn">重置步數</button>
+
+    <p>建議在手機上打開此網頁，並允許感測器 / motion 權限，實際走路或搖動裝置觀察步數變化。</p>
+
+    <script src="pedometer.js"></script>
+</body>
+
+</html>
