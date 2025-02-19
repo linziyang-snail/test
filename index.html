@@ -55,18 +55,19 @@
     <script>
         let stepCount = 0;
         let lastStepTime = 0;
-        // 判斷兩步之間最小間隔（避免重複觸發）
-        const stepInterval = 300; // 毫秒
-        // 門檻值，若超過則認定為一步
-        // 注意：使用無重力數據（acceleration）時數值較小，
-        // 使用包含重力的數據（accelerationIncludingGravity）時需將重力（約9.8）扣除後再判斷
-        const threshold = 1.2; // m/s^2
+        // 用於平滑濾波的參數與前一次平滑值
+        let smoothedAcc = null;
+        let prevSmoothed = null;
+        const alpha = 0.3;              // 平滑係數：介於 0～1，數值越低越平滑
+        // 提高門檻值以降低靈敏度，避免噪音干擾（依需求調整）
+        const threshold = 1.5;          // m/s²
+        const minStepInterval = 300;    // 兩步之間的最小間隔（毫秒）
 
         function handleMotion(event) {
             let acc = null;
             let usedGravity = false;
 
-            // 優先使用不包含重力的數據
+            // 優先使用不含重力的數據
             if (event.acceleration && event.acceleration.x !== null) {
                 acc = event.acceleration;
             } else if (event.accelerationIncludingGravity && event.accelerationIncludingGravity.x !== null) {
@@ -79,19 +80,28 @@
             const ay = acc.y || 0;
             const az = acc.z || 0;
             let magnitude = Math.sqrt(ax * ax + ay * ay + az * az);
-            let adjustedMagnitude = magnitude;
-
-            // 若使用包含重力的數據，扣除重力（約9.8 m/s²）
             if (usedGravity) {
-                adjustedMagnitude = Math.abs(magnitude - 9.8);
+                // 扣除重力 9.8 m/s²
+                magnitude = Math.abs(magnitude - 9.8);
+            }
+
+            // 進行指數移動平均平滑濾波
+            if (smoothedAcc === null) {
+                smoothedAcc = magnitude;
+            } else {
+                smoothedAcc = alpha * magnitude + (1 - alpha) * smoothedAcc;
             }
 
             const currentTime = Date.now();
-            if (adjustedMagnitude > threshold && (currentTime - lastStepTime > stepInterval)) {
-                stepCount++;
-                lastStepTime = currentTime;
-                document.getElementById("stepCount").textContent = stepCount;
+            // 峰值偵測：當前一次的平滑值高於此次的平滑值，且超過門檻，並且間隔足夠，則視為一次步伐
+            if (prevSmoothed !== null) {
+                if (prevSmoothed > smoothedAcc && prevSmoothed > threshold && (currentTime - lastStepTime > minStepInterval)) {
+                    stepCount++;
+                    lastStepTime = currentTime;
+                    document.getElementById("stepCount").textContent = stepCount;
+                }
             }
+            prevSmoothed = smoothedAcc;
         }
 
         function startPedometer() {
