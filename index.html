@@ -1,47 +1,128 @@
 <!DOCTYPE html>
-<html>
+<html lang="zh-TW">
 
 <head>
-    <meta charset="utf-8">
-    <title>最強教學版計步器</title>
+    <meta charset="UTF-8">
+    <title>計步器</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
         body {
-            font-family: sans-serif;
-            padding: 1rem;
+            font-family: 'Helvetica', sans-serif;
+            text-align: center;
+            margin: 0;
+            padding: 20px;
+            background: #f2f2f2;
         }
 
-        h1 {
-            margin-bottom: 1rem;
+        #container {
+            max-width: 500px;
+            margin: auto;
+            background: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
         }
 
-        .counter {
-            font-size: 2rem;
-            margin-bottom: 1rem;
+        #stepCount {
+            font-size: 72px;
+            margin: 20px 0;
+            color: #333;
         }
 
         button {
-            margin-right: 1rem;
+            padding: 15px 30px;
+            font-size: 18px;
+            background: #4CAF50;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        button:disabled {
+            background: #999;
         }
     </style>
 </head>
 
 <body>
-    <h1>最強(教學版)計步器</h1>
-    <!-- 按鈕區：一個用來請求 motion 權限、另一個重置步數 -->
-    <div>
-        <button id="requestBtn">允許動態權限</button>
-        <button id="resetBtn">重置步數</button>
+    <div id="container">
+        <h1>計步器</h1>
+        <div id="stepCount">0</div>
+        <button id="startButton">開始計步</button>
     </div>
 
-    <!-- 顯示步數 -->
-    <div class="counter">
-        步數：<span id="stepCount">0</span>
-    </div>
+    <script>
+        let stepCount = 0;
+        let lastStepTime = 0;
+        // 判斷兩步之間最小間隔（避免重複觸發）
+        const stepInterval = 300; // 毫秒
+        // 門檻值，若超過則認定為一步
+        // 注意：使用無重力數據（acceleration）時數值較小，
+        // 使用包含重力的數據（accelerationIncludingGravity）時需將重力（約9.8）扣除後再判斷
+        const threshold = 1.2; // m/s^2
 
-    <p>建議：在 iOS Safari / Android Chrome，以 HTTPS 或 localhost 方式開啟此頁面。
-        點擊「允許動態權限」，允許後再拿著手機走動或晃動。</p>
+        function handleMotion(event) {
+            let acc = null;
+            let usedGravity = false;
 
-    <script src="pedometer.js"></script>
+            // 優先使用不包含重力的數據
+            if (event.acceleration && event.acceleration.x !== null) {
+                acc = event.acceleration;
+            } else if (event.accelerationIncludingGravity && event.accelerationIncludingGravity.x !== null) {
+                acc = event.accelerationIncludingGravity;
+                usedGravity = true;
+            }
+            if (!acc) return;
+
+            const ax = acc.x || 0;
+            const ay = acc.y || 0;
+            const az = acc.z || 0;
+            let magnitude = Math.sqrt(ax * ax + ay * ay + az * az);
+            let adjustedMagnitude = magnitude;
+
+            // 若使用包含重力的數據，扣除重力（約9.8 m/s²）
+            if (usedGravity) {
+                adjustedMagnitude = Math.abs(magnitude - 9.8);
+            }
+
+            const currentTime = Date.now();
+            if (adjustedMagnitude > threshold && (currentTime - lastStepTime > stepInterval)) {
+                stepCount++;
+                lastStepTime = currentTime;
+                document.getElementById("stepCount").textContent = stepCount;
+            }
+        }
+
+        function startPedometer() {
+            if (typeof DeviceMotionEvent !== "undefined" &&
+                typeof DeviceMotionEvent.requestPermission === "function") {
+                // iOS 13+ 需點擊後請求權限
+                DeviceMotionEvent.requestPermission()
+                    .then(permissionState => {
+                        if (permissionState === 'granted') {
+                            window.addEventListener("devicemotion", handleMotion);
+                        } else {
+                            alert("授權失敗，無法使用計步器！");
+                        }
+                    })
+                    .catch(error => {
+                        console.error("錯誤:", error);
+                        alert("無法取得運動感應器的權限。");
+                    });
+            } else if (window.DeviceMotionEvent) {
+                window.addEventListener("devicemotion", handleMotion);
+            } else {
+                alert("您的裝置不支援運動感應器！");
+            }
+        }
+
+        document.getElementById("startButton").addEventListener("click", function () {
+            startPedometer();
+            this.disabled = true;
+            this.textContent = "計步中...";
+        });
+    </script>
 </body>
 
 </html>
